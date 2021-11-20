@@ -1,3 +1,30 @@
+from django.contrib.auth.models import AbstractUser
+from django.conf import settings
 from django.db import models
 
 # Create your models here.
+
+
+class User(AbstractUser):
+    pass
+
+
+class Stockpile(models.Model):
+    title = models.CharField(max_length=80)
+    date_created = models.DateTimeField(auto_now_add=True)
+    creator = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="created",
+        default=1
+    )
+
+    def __str__(self):
+        return f"{self.title}"
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "creator": self.creator.username
+        }
