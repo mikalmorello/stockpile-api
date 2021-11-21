@@ -6,7 +6,12 @@ from django.db import models
 
 
 class User(AbstractUser):
-    pass
+    def serialize(self):
+        return {
+            "id": self.id,
+            "username": self.username,
+            "email": self.email
+        }
 
 
 class Stockpile(models.Model):

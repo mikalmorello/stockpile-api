@@ -18,11 +18,6 @@ def stockpiles(request):
     if request.method == 'GET':
         return JsonResponse([stockpile.serialize() for stockpile in stockpiles], safe=False)
 
-    return render(request, "api/stockpiles.html", {
-        "title": "stockpiles",
-        "stockpiles": stockpiles
-    })
-
 
 def stockpile(request, stockpile_id):
     # Get stockpile
@@ -32,8 +27,20 @@ def stockpile(request, stockpile_id):
     if request.method == "GET":
         return JsonResponse(stockpile.serialize())
 
-    # Render stockpile view
-    return render(request, "api/stockpile.html", {
-        "stockpile": stockpile,
-        "id": stockpile_id
-    })
+
+def users(request):
+    # Get users
+    users = User.objects.all()
+
+    # For a GET request
+    if request.method == "GET":
+        return JsonResponse([user.serialize() for user in users], safe=False)
+
+
+def user(request, user_id):
+    # Get User
+    user = User.objects.get(id=user_id)
+
+    # For a GET request
+    if request.method == "GET":
+        return JsonResponse(user.serialize())
