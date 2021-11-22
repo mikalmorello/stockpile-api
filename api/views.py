@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
+import requests
 
 from .models import User, Stockpile
 
@@ -44,3 +45,22 @@ def user(request, user_id):
     # For a GET request
     if request.method == "GET":
         return JsonResponse(user.serialize())
+
+
+def stock(request, stock_key):
+    # Get Stock
+    # ADD APIKEY
+    url = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=IBM&apikey='
+    # params = {'year': year, 'author': author}
+    # r = requests.get(url, params=params)
+    r = requests.get(url)
+    stock = r.json()
+
+    # For a GET request
+    if request.method == "GET":
+        return JsonResponse(stock)
+
+    return render(request, "api/test.html", {
+        "title": "stock name",
+        "stock_key": stock_key
+    })
