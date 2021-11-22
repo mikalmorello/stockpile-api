@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
+from decouple import config
 import requests
 
 from .models import User, Stockpile
@@ -49,10 +50,9 @@ def user(request, user_id):
 
 def stock(request, stock_key):
     # Get Stock
-    # ADD APIKEY
-    url = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=IBM&apikey='
-    # params = {'year': year, 'author': author}
-    # r = requests.get(url, params=params)
+    # AlphaVantage API Key
+    API_KEY = config('ALPHAVANTAGE_API_KEY')
+    url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol={stock_key}&apikey={API_KEY}'
     r = requests.get(url)
     stock = r.json()
 
@@ -62,5 +62,6 @@ def stock(request, stock_key):
 
     return render(request, "api/test.html", {
         "title": "stock name",
-        "stock_key": stock_key
+        "stock_key": stock_key,
+        "api": API_KEY
     })
