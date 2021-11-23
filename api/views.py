@@ -58,32 +58,31 @@ def stock(request, symbol_key):
     data = r.json()
 
     stock = {
+
         "symbol": data["Meta Data"]["2. Symbol"],
         "last_refreshed": data["Meta Data"]["3. Last Refreshed"],
-        "currentvalue": list(data["Time Series (Daily)"].values())[0]["5. adjusted close"],
-        "currentkey": list(data["Time Series (Daily)"].keys())[0],
         "daily":
-            [
-                {
-                    "date": list(data["Time Series (Daily)"].keys())[0],
-                    "price": list(data["Time Series (Daily)"].values())[0]["5. adjusted close"]
-                },
-                {
-                    "date": list(data["Time Series (Daily)"].keys())[1],
-                    "price": list(data["Time Series (Daily)"].values())[1]["5. adjusted close"]
-                },
-                {
-                    "date": list(data["Time Series (Daily)"].keys())[2],
-                    "price": list(data["Time Series (Daily)"].values())[2]["5. adjusted close"]
-                },
-                {
-                    "date": list(data["Time Series (Daily)"].keys())[3],
-                    "price": list(data["Time Series (Daily)"].values())[3]["5. adjusted close"]
-                },
-                {
-                    "date": list(data["Time Series (Daily)"].keys())[4],
-                    "price": list(data["Time Series (Daily)"].values())[4]["5. adjusted close"]
-                },
+        [
+            {
+                "date": list(data["Time Series (Daily)"].keys())[0],
+                "price": list(data["Time Series (Daily)"].values())[0]["5. adjusted close"]
+            },
+            {
+                "date": list(data["Time Series (Daily)"].keys())[1],
+                "price": list(data["Time Series (Daily)"].values())[1]["5. adjusted close"]
+            },
+            {
+                "date": list(data["Time Series (Daily)"].keys())[2],
+                "price": list(data["Time Series (Daily)"].values())[2]["5. adjusted close"]
+            },
+            {
+                "date": list(data["Time Series (Daily)"].keys())[3],
+                "price": list(data["Time Series (Daily)"].values())[3]["5. adjusted close"]
+            },
+            {
+                "date": list(data["Time Series (Daily)"].keys())[4],
+                "price": list(data["Time Series (Daily)"].values())[4]["5. adjusted close"]
+            },
         ]
 
     }
