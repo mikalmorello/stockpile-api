@@ -33,3 +33,16 @@ class Stockpile(models.Model):
             "title": self.title,
             "creator": self.creator.username
         }
+
+
+class Symbol(models.Model):
+    symbol = models.CharField(max_length=5)
+    name = models.CharField(max_length=255)
+    date_created = models.DateTimeField(auto_now_add=True)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "symbol": self.symbol,
+            "name": self.name
+        }

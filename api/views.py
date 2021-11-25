@@ -5,7 +5,7 @@ import requests
 import os
 from django.conf import settings
 
-from .models import User, Stockpile
+from .models import User, Stockpile, Symbol
 
 
 def index(request):
@@ -103,11 +103,22 @@ def stock(request, symbol_key):
 
 
 def symbols(request):
+    # Get Symbols
+    symbols = Symbol.objects.all()
+
+    # For a GET request
+    if request.method == "GET":
+        return JsonResponse([symbol.serialize() for symbol in symbols], safe=False)
+
+
+def update_symbols(request):
 
     # Get Nasdaq symbols files
     fileObject = open(os.path.join(settings.BASE_DIR, 'nasdaqlisted.txt'), "r")
     # Split file by line break
     symbols = fileObject.readlines()
+    # Remove the first header row
+    symbols = symbols[1:]
     # Remove the date added at the end
     symbols = symbols[:-1]
 
