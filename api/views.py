@@ -2,6 +2,8 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from decouple import config
 import requests
+import os
+from django.conf import settings
 
 from .models import User, Stockpile
 
@@ -97,4 +99,30 @@ def stock(request, symbol_key):
         "title": "stock name",
         "symbol_key": symbol_key,
         "api": API_KEY
+    })
+
+
+def symbols(request):
+
+    # Get Nasdaq symbols files
+    fileObject = open(os.path.join(settings.BASE_DIR, 'nasdaqlisted.txt'), "r")
+    # Split file by line break
+    symbols = fileObject.readlines()
+    # Remove the date added at the end
+    symbols = symbols[:-1]
+
+    # Loop through symbols
+    for symbol in symbols:
+        # Remove any empty spaces
+        symbol = symbol.strip()
+        # Split symbol data on divider
+        symbol = symbol.split("|")
+        # Create new symbol
+        new_symbol = {
+            "symbol": symbol[0],
+            "name": symbol[1]
+        }
+        print(new_symbol)
+    return render(request, "api/test.html", {
+        "title": "symbols",
     })
