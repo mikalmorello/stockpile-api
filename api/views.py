@@ -111,29 +111,46 @@ def symbols(request):
         return JsonResponse([symbol.serialize() for symbol in symbols], safe=False)
 
 
+def symbol(request, stock_symbol):
+    # Get Symbols
+    symbol = Symbol.objects.get(symbol=stock_symbol.upper())
+
+    # For a GET request
+    if request.method == "GET":
+        return JsonResponse(symbol.serialize(), safe=False)
+
+
 def update_symbols(request):
+    # Get Stocks
+    symbols = Symbol.objects.all()
 
     # Get Nasdaq symbols files
     fileObject = open(os.path.join(settings.BASE_DIR, 'nasdaqlisted.txt'), "r")
     # Split file by line break
-    symbols = fileObject.readlines()
+    listings = fileObject.readlines()
     # Remove the first header row
-    symbols = symbols[1:]
+    listings = listings[1:]
     # Remove the date added at the end
-    symbols = symbols[:-1]
+    listings = listings[:-1]
 
     # Loop through symbols
-    for symbol in symbols:
+    for listing in listings:
         # Remove any empty spaces
-        symbol = symbol.strip()
+        listing = listing.strip()
         # Split symbol data on divider
-        symbol = symbol.split("|")
-        # Create new symbol
-        new_symbol = {
-            "symbol": symbol[0],
-            "name": symbol[1]
-        }
-        print(new_symbol)
+        listing = listing.split("|")
+        # Create new listing symbol
+        listing_symbol = listing[0]
+        listing_name = listing[1]
+
+        # print(new_symbol)
+        if symbols.filter(symbol=listing_symbol).exists():
+            # If symbol already exists, don't do anything
+            pass
+        else:
+            # Otherwise add symbol
+            new_symbol = Symbol(symbol=listing_symbol, name=listing_name)
+            new_symbol.save()
     return render(request, "api/test.html", {
         "title": "symbols",
     })

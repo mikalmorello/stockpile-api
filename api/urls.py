@@ -9,5 +9,6 @@ urlpatterns = [
     path("users/<str:user_id>", views.user, name="user"),
     path("stocks/<str:symbol_key>", views.stock, name="stock"),
     path("symbols", views.symbols, name="symbols"),
-    path("symbols/update", views.update_symbols, name="update_symbols")
+    path("symbols/update", views.update_symbols, name="update_symbols"),
+    path("symbols/<str:stock_symbol>", views.symbol, name="symbol"),
 ]
