@@ -4,6 +4,7 @@ from decouple import config
 import requests
 import os
 from django.conf import settings
+from . import util
 
 from .models import User, Stockpile, Symbol
 
@@ -26,6 +27,16 @@ def stockpiles(request):
 def stockpile(request, stockpile_id):
     # Get stockpile
     stockpile = Stockpile.objects.get(id=stockpile_id)
+    stocks = stockpile.stocks.all()
+    # print(stocks)
+    symbols = []
+    # Add stock data to each symbol
+    # for symbol in stocks:
+    #     # Get Stock
+    #     stock = util.get_stock(symbol)
+    #     # print(stock)
+
+    # print(stockpile)
 
     # For a GET request
     if request.method == "GET":
@@ -52,54 +63,11 @@ def user(request, user_id):
 
 def stock(request, symbol_key):
     # Get Stock
-    # AlphaVantage API Key
-    API_KEY = config('ALPHAVANTAGE_API_KEY')
-    url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol={symbol_key}&apikey={API_KEY}'
-    r = requests.get(url)
-    # stock = r.json()
-    data = r.json()
-
-    stock = {
-
-        "symbol": data["Meta Data"]["2. Symbol"],
-        "last_refreshed": data["Meta Data"]["3. Last Refreshed"],
-        "daily":
-        [
-            {
-                "date": list(data["Time Series (Daily)"].keys())[0],
-                "price": list(data["Time Series (Daily)"].values())[0]["5. adjusted close"]
-            },
-            {
-                "date": list(data["Time Series (Daily)"].keys())[1],
-                "price": list(data["Time Series (Daily)"].values())[1]["5. adjusted close"]
-            },
-            {
-                "date": list(data["Time Series (Daily)"].keys())[2],
-                "price": list(data["Time Series (Daily)"].values())[2]["5. adjusted close"]
-            },
-            {
-                "date": list(data["Time Series (Daily)"].keys())[3],
-                "price": list(data["Time Series (Daily)"].values())[3]["5. adjusted close"]
-            },
-            {
-                "date": list(data["Time Series (Daily)"].keys())[4],
-                "price": list(data["Time Series (Daily)"].values())[4]["5. adjusted close"]
-            },
-        ]
-
-    }
-
-    print(list(data["Time Series (Daily)"].keys())[0])
+    stock = util.get_stock(symbol_key)
 
     # For a GET request
     if request.method == "GET":
         return JsonResponse(stock, safe=False)
-
-    return render(request, "api/test.html", {
-        "title": "stock name",
-        "symbol_key": symbol_key,
-        "api": API_KEY
-    })
 
 
 def symbols(request):
