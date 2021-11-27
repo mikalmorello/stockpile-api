@@ -38,6 +38,10 @@ def get_stockdata(stock_symbol):
             "date": list(data["Time Series (Daily)"].keys())[4],
             "price": list(data["Time Series (Daily)"].values())[4]["5. adjusted close"]
         },
+        {
+            "date": list(data["Time Series (Daily)"].keys())[5],
+            "price": list(data["Time Series (Daily)"].values())[5]["5. adjusted close"]
+        },
     ]
 
     # Return the stock data
@@ -55,32 +59,36 @@ def refresh_stock(stock_symbol):
     stock_date = stock.last_refreshed.date()
 
     # If the stock hasn't been refreshed today
-    # if not stock_date == todays_date:
-    if stock_date == todays_date:
+    if not stock_date == todays_date:
+        # if stock_date == todays_date:
         print(f"--- {stock_symbol} Refreshed ---")
         # Refresh stock data
         stockdata = get_stockdata(stock.symbol)
 
-        # Get the daily change
-        latest_price = float(stockdata[0]['price'])
-        previous_price = float(stockdata[1]['price'])
-        print(latest_price)
-        print(previous_price)
-        percent_change = str(
-            round((((latest_price - previous_price) / previous_price) * 100), 2))
-        print(percent_change)
+        # Price variables
+        latest_price = stockdata[0]['price']
+        previous_price = stockdata[1]['price']
+        lastweek_price = stockdata[5]['price']
 
-        # Get the stock weekly change
+        # Get day change
+        day_change = calculate_change(latest_price, previous_price)
+
+        # Get week change
+        week_change = calculate_change(latest_price, lastweek_price)
 
         # Update the stock data
         stock.daily = stockdata
+        # Update the stock day change metrics
+        stock.day_change = day_change
+        # Update the stock week change metrics
+        stock.week_change = week_change
         # Update the last refreshed data
         stock.refreshed = datetime.datetime.now()
         # Save the stock
         stock.save()
 
-    # Return the stock
-    return stock
+        # Return the stock
+        return stock
 
 
 # Refresh stockpile
@@ -116,9 +124,21 @@ def create_stock(stock_symbol):
     # Get the stock data
     stockdata = get_stockdata(stock_symbol)
 
+    # Price variables
+    latest_price = stockdata[0]['price']
+    previous_price = stockdata[1]['price']
+    lastweek_price = stockdata[5]['price']
+
+    # Get day change
+    day_change = calculate_change(latest_price, previous_price)
+
+    # Get week change
+    week_change = calculate_change(latest_price, lastweek_price)
+
     # Create new stock
     stock = Stock(symbol=stock_symbol.upper(),
-                  daily=stockdata, change_day=0, change_week=0)
+                  daily=stockdata, day_change=day_change, week_change=week_change)
+
     stock.save()
 
     # Return the stock
@@ -156,3 +176,29 @@ def update_symbols():
             # Otherwise add symbol
             new_symbol = Symbol(symbol=listing_symbol, name=listing_name)
             new_symbol.save()
+
+
+# Calculate amount and percent change
+def calculate_change(latest_price, previous_price):
+    # Convert any strings to numbers
+    latest_price = float(latest_price)
+    previous_price = float(previous_price)
+
+    # Calculate price change
+    price_change = round(latest_price - previous_price, 2)
+
+    # Calculate percent change
+    percent_change = str(
+        round(((price_change / previous_price) * 100), 2))
+
+    change = {
+        "price": price_change,
+        "percent": percent_change,
+    }
+
+    print(latest_price)
+    print(previous_price)
+    print(change)
+
+    # Return changes
+    return change
