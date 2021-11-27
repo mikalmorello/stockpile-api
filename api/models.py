@@ -29,9 +29,20 @@ class Stockpile(models.Model):
         return f"{self.title}"
 
     def serialize(self):
+        stocks = []
+        for stock in self.stocks.all():
+            stock_data = {
+                "id": stock.id,
+                "symbol": stock.symbol,
+                "last_refreshed": stock.last_refreshed,
+                "daily": stock.daily,
+                "change_day": stock.change_day,
+                "change_week": stock.change_week
+            }
+            stocks.append(stock_data)
         return {
             "id": self.id,
-            "stocks": [stock.symbol for stock in self.stocks.all()],
+            "stocks": stocks,
             "title": self.title,
             "creator": self.creator.username
         }
