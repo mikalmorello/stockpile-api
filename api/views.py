@@ -13,7 +13,7 @@ def index(request):
 
 def stockpiles(request):
     # Get stockpiles
-    stockpiles = Stockpile.objects.all()
+    stockpiles = util.refresh_stockpiles()
 
     # For GET request
     if request.method == 'GET':
@@ -21,12 +21,8 @@ def stockpiles(request):
 
 
 def stockpile(request, stockpile_id):
-    # Get stockpile
-    stockpile = Stockpile.objects.get(id=stockpile_id)
-    stocks = stockpile.stocks.all()
-
-    for stock in stocks:
-        util.refresh_stock(stock.symbol)
+    # Refresh stockpile
+    stockpile = util.refresh_stockpile(stockpile_id)
 
     # For a GET request
     if request.method == "GET":

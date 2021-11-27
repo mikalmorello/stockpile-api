@@ -55,10 +55,22 @@ def refresh_stock(stock_symbol):
     stock_date = stock.last_refreshed.date()
 
     # If the stock hasn't been refreshed today
-    if not stock_date == todays_date:
+    # if not stock_date == todays_date:
+    if stock_date == todays_date:
         print(f"--- {stock_symbol} Refreshed ---")
         # Refresh stock data
         stockdata = get_stockdata(stock.symbol)
+
+        # Get the daily change
+        latest_price = float(stockdata[0]['price'])
+        previous_price = float(stockdata[1]['price'])
+        print(latest_price)
+        print(previous_price)
+        percent_change = str(
+            round((((latest_price - previous_price) / previous_price) * 100), 2))
+        print(percent_change)
+
+        # Get the stock weekly change
 
         # Update the stock data
         stock.daily = stockdata
@@ -72,9 +84,30 @@ def refresh_stock(stock_symbol):
 
 
 # Refresh stockpile
-def refresh_stockpile(stockpile):
-    for stock in stockpile.stocks:
+def refresh_stockpile(stockpile_id):
+    # Get stockpile
+    stockpile = Stockpile.objects.get(id=stockpile_id)
+    print(stockpile)
+
+    # Refresh associated stocks
+    for stock in stockpile.stocks.all():
         refresh_stock(stock.symbol)
+
+    # Return stockpile
+    return stockpile
+
+
+# Refresh stockpiles
+def refresh_stockpiles():
+    # Get stockpiles
+    stockpiles = Stockpile.objects.all()
+
+    # Refresh each stockpile
+    for stockpile in stockpiles:
+        refresh_stockpile(stockpile.id)
+
+    # Return stockpiles
+    return stockpiles
 
 
 # Create a stock
