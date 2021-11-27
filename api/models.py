@@ -16,7 +16,7 @@ class User(AbstractUser):
 
 class Stockpile(models.Model):
     title = models.CharField(max_length=80)
-    stocks = models.ManyToManyField("Symbol", related_name="stockpiles")
+    stocks = models.ManyToManyField("Stock", related_name="stockpiles")
     date_created = models.DateTimeField(auto_now_add=True)
     creator = models.ForeignKey(
         settings.AUTH_USER_MODEL,
