@@ -51,3 +51,26 @@ class Symbol(models.Model):
             "symbol": self.symbol,
             "name": self.name
         }
+
+
+class Stock(models.Model):
+    symbol = models.CharField(max_length=5)
+    last_refreshed = models.DateTimeField(auto_now_add=True)
+    daily = models.JSONField(default=list)
+    change_day = models.DecimalField(
+        max_digits=3, decimal_places=0, default=0)
+    change_week = models.DecimalField(
+        max_digits=3, decimal_places=0, default=0)
+
+    def __str__(self):
+        return f"{self.symbol}"
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "symbol": self.symbol,
+            "last_refreshed": self.last_refreshed,
+            "daily": self.daily,
+            "change_day": self.change_day,
+            "change_week": self.change_week
+        }

@@ -2,11 +2,12 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from decouple import config
 import requests
+import datetime
 import os
 from django.conf import settings
 from . import util
 
-from .models import User, Stockpile, Symbol
+from .models import User, Stockpile, Symbol, Stock
 
 
 def index(request):
@@ -30,7 +31,7 @@ def stockpile(request, stockpile_id):
     stocks = stockpile.stocks.all()
     # print(stocks)
     symbols = []
-    # Add stock data to each symbol
+    # # Add stock data to each symbol
     # for symbol in stocks:
     #     # Get Stock
     #     stock = util.get_stock(symbol)
@@ -59,15 +60,6 @@ def user(request, user_id):
     # For a GET request
     if request.method == "GET":
         return JsonResponse(user.serialize())
-
-
-def stock(request, symbol_key):
-    # Get Stock
-    stock = util.get_stock(symbol_key)
-
-    # For a GET request
-    if request.method == "GET":
-        return JsonResponse(stock, safe=False)
 
 
 def symbols(request):
@@ -122,3 +114,52 @@ def update_symbols(request):
     return render(request, "api/test.html", {
         "title": "symbols",
     })
+
+
+def stocks(request):
+    # Get Stocks
+    stocks = Stock.objects.all()
+
+    # For a GET request
+    if request.method == "GET":
+        return JsonResponse([stock.serialize() for stock in stocks], safe=False)
+
+
+def stock(request, stock_symbol):
+
+    # For a GET request
+    if request.method == "GET":
+
+        # Check if stock exists
+        if Stock.objects.filter(symbol=stock_symbol.upper()).exists():
+
+            # Get Stock
+            stock = Stock.objects.get(symbol=stock_symbol.upper())
+            date_of_today = datetime.date.today()
+            stock_date = stock.last_refreshed.date()
+
+            print(datetime.datetime.now())
+            # If the stock hasn't been refreshed today
+            if not date_of_today == stock_date:
+                # Refresh stock data
+                stockdata = util.get_stockdata(stock_symbol)
+
+                # Update the stock
+                stock.daily = stockdata
+                stock.refreshed = datetime.datetime.now()
+                stock.save()
+
+            # Return json
+            return JsonResponse(stock.serialize(), safe=False)
+        else:
+            print('stock is new')
+            # Get Stockdata
+            stockdata = util.get_stockdata(stock_symbol)
+
+            # Create new stock
+            new_stock = Stock(symbol=stock_symbol.upper(),
+                              daily=stockdata, change_day=0, change_week=0)
+            new_stock.save()
+
+            # Return json
+            return JsonResponse(new_stock.serialize(), safe=False)
