@@ -66,7 +66,7 @@ class Symbol(models.Model):
 
 class Stock(models.Model):
     symbol = models.CharField(max_length=5)
-    last_refreshed = models.DateTimeField(auto_now_add=True)
+    last_refreshed = models.DateTimeField(auto_now=True)
     daily = models.JSONField(default=list)
     day_change = models.JSONField(default=list)
     week_change = models.JSONField(default=list)

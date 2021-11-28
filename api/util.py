@@ -58,6 +58,9 @@ def refresh_stock(stock_symbol):
     # Get the stocks last update date
     stock_date = stock.last_refreshed.date()
 
+    print(todays_date)
+    print(stock_date)
+
     # If the stock hasn't been refreshed today
     if not stock_date == todays_date:
         # if stock_date == todays_date:
@@ -83,12 +86,12 @@ def refresh_stock(stock_symbol):
         # Update the stock week change metrics
         stock.week_change = week_change
         # Update the last refreshed data
-        stock.refreshed = datetime.datetime.now()
+        # stock.refreshed = datetime.datetime.now()
         # Save the stock
         stock.save()
 
-        # Return the stock
-        return stock
+    # Return the stock
+    return stock
 
 
 # Refresh stockpile
@@ -118,6 +121,54 @@ def refresh_stockpiles():
     return stockpiles
 
 
+# Create a stockpile
+def create_stockpile(submission):
+    print(f"Create stockpile")
+
+    # Get the title
+    title = submission.get("title")
+    # Get stocks
+    symbols = submission["stocks"]
+
+    # Create a list of stocks
+    stocks = []
+
+    # Loop through stocks
+    for symbol in symbols:
+        # get the stock symbol
+        stock_symbol = symbol["value"]
+
+        # Check if stock exists
+        if Stock.objects.filter(symbol=stock_symbol.upper()).exists():
+            print(f"update stock {stock_symbol}")
+            # If the stock exists, update its data
+            stock = refresh_stock(stock_symbol)
+            stocks.append(stock)
+        else:
+            # Create a new stock
+            print(f"create new stock {stock_symbol}")
+            new_stock = create_stock(stock_symbol)
+            stocks.append(new_stock)
+
+    print(submission)
+    print(title)
+    print(stocks)
+
+    # Create new stockpile
+    stockpile = Stockpile(
+        title=title,
+    )
+
+    # Save stockpile
+    stockpile.save()
+
+    # Set stockpiles
+    stockpile.stocks.set(stocks)
+
+    # Return the stock
+    return stockpile
+
+
 # Create a stock
 def create_stock(stock_symbol):
     print(f"--- {stock_symbol} Created ---")
@@ -140,6 +191,8 @@ def create_stock(stock_symbol):
                   daily=stockdata, day_change=day_change, week_change=week_change)
 
     stock.save()
+
+    print(stock)
 
     # Return the stock
     return stock

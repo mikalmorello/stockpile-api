@@ -56,18 +56,8 @@ def create_stockpile(request):
     if request.method == "POST":
         # Submission data
         submission = json.loads(request.body)
-        # Get the title
-        title = submission.get("title")
-        # Get stocks
-        stocks = submission.get("stocks")
-
-        # Get the user
-        # creator = request.user
-
-        print(submission)
-        print(title)
-        # print(creator)
-        print(stocks)
+        # Create stockpile
+        util.create_stockpile(submission)
 
     return render(request, "api/test.html", {
         "title": "title"
