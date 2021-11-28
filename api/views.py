@@ -58,12 +58,16 @@ def create_stockpile(request):
         submission = json.loads(request.body)
         # Get the title
         title = submission.get("title")
-        # Get the user
-        creator = request.user
         # Get stocks
+        stocks = submission.get("stocks")
+
+        # Get the user
+        # creator = request.user
 
         print(submission)
         print(title)
+        # print(creator)
+        print(stocks)
 
     return render(request, "api/test.html", {
         "title": "title"
