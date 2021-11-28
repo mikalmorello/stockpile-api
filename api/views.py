@@ -1,5 +1,7 @@
+import json
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from . import util
 
 from .models import User, Stockpile, Symbol, Stock
@@ -9,6 +11,24 @@ def index(request):
     return render(request, "api/index.html", {
         "title": 'title',
     })
+
+
+def users(request):
+    # Get users
+    users = User.objects.all()
+
+    # For a GET request
+    if request.method == "GET":
+        return JsonResponse([user.serialize() for user in users], safe=False)
+
+
+def user(request, user_id):
+    # Get User
+    user = User.objects.get(id=user_id)
+
+    # For a GET request
+    if request.method == "GET":
+        return JsonResponse(user.serialize())
 
 
 def stockpiles(request):
@@ -29,22 +49,25 @@ def stockpile(request, stockpile_id):
         return JsonResponse(stockpile.serialize())
 
 
-def users(request):
-    # Get users
-    users = User.objects.all()
+@csrf_exempt
+def create_stockpile(request):
+    print(request)
+    # Get the form submission
+    if request.method == "POST":
+        # Submission data
+        submission = json.loads(request.body)
+        # Get the title
+        title = submission.get("title")
+        # Get the user
+        creator = request.user
+        # Get stocks
 
-    # For a GET request
-    if request.method == "GET":
-        return JsonResponse([user.serialize() for user in users], safe=False)
+        print(submission)
+        print(title)
 
-
-def user(request, user_id):
-    # Get User
-    user = User.objects.get(id=user_id)
-
-    # For a GET request
-    if request.method == "GET":
-        return JsonResponse(user.serialize())
+    return render(request, "api/test.html", {
+        "title": "title"
+    })
 
 
 def symbols(request):
