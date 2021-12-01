@@ -1,4 +1,5 @@
 import json
+import time
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -114,3 +115,19 @@ def stock(request, stock_symbol):
 
             # Return json
             return JsonResponse(new_stock.serialize(), safe=False)
+
+
+def update_stocks(request):
+    # Get stocks
+    stocks = Stock.objects.all()
+    for stock in stocks:
+        # If using free API use delay to handle rate limiting (5 calls per min)
+        time.sleep(12)
+        # List stock symbol
+        print(stock.symbol)
+        # Update stock data
+        util.refresh_stock(stock.symbol)
+
+    return render(request, "api/test.html", {
+        "title": "test update stocks"
+    })

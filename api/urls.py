@@ -12,5 +12,6 @@ urlpatterns = [
     path("symbols/update", views.update_symbols, name="update_symbols"),
     path("symbols/<str:stock_symbol>", views.symbol, name="symbol"),
     path("stocks", views.stocks, name="stocks"),
+    path("stocks/update", views.update_stocks, name="update_stocks"),
     path("stocks/<str:stock_symbol>", views.stock, name="stock"),
 ]
