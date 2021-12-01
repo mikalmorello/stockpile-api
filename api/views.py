@@ -1,5 +1,5 @@
 import json
-import time
+
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -34,7 +34,7 @@ def user(request, user_id):
 
 def stockpiles(request):
     # Get stockpiles
-    stockpiles = util.refresh_stockpiles()
+    stockpiles = Stockpile.objects.all()
 
     # For GET request
     if request.method == 'GET':
@@ -43,7 +43,7 @@ def stockpiles(request):
 
 def stockpile(request, stockpile_id):
     # Refresh stockpile
-    stockpile = util.refresh_stockpile(stockpile_id)
+    stockpile = Stockpile.objects.get(id=stockpile_id)
 
     # For a GET request
     if request.method == "GET":
@@ -105,7 +105,7 @@ def stock(request, stock_symbol):
         # Check if stock exists
         if Stock.objects.filter(symbol=stock_symbol.upper()).exists():
             # If the stock exists, update its data
-            stock = util.refresh_stock(stock_symbol)
+            stock = Stock.objects.get(symbol=stock_symbol.upper())
 
             # Return json
             return JsonResponse(stock.serialize(), safe=False)
@@ -118,16 +118,5 @@ def stock(request, stock_symbol):
 
 
 def update_stocks(request):
-    # Get stocks
-    stocks = Stock.objects.all()
-    for stock in stocks:
-        # If using free API use delay to handle rate limiting (5 calls per min)
-        time.sleep(12)
-        # List stock symbol
-        print(stock.symbol)
-        # Update stock data
-        util.refresh_stock(stock.symbol)
-
-    return render(request, "api/test.html", {
-        "title": "test update stocks"
-    })
+    # Update stocks data
+    util.update_stocks()

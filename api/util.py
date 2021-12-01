@@ -1,6 +1,7 @@
 # Dependencies
 import requests
 import datetime
+import time
 import os
 from decouple import config
 from django.conf import settings
@@ -92,33 +93,6 @@ def refresh_stock(stock_symbol):
 
     # Return the stock
     return stock
-
-
-# Refresh stockpile
-def refresh_stockpile(stockpile_id):
-    # Get stockpile
-    stockpile = Stockpile.objects.get(id=stockpile_id)
-    print(stockpile)
-
-    # Refresh associated stocks
-    for stock in stockpile.stocks.all():
-        refresh_stock(stock.symbol)
-
-    # Return stockpile
-    return stockpile
-
-
-# Refresh stockpiles
-def refresh_stockpiles():
-    # Get stockpiles
-    stockpiles = Stockpile.objects.all()
-
-    # Refresh each stockpile
-    for stockpile in stockpiles:
-        refresh_stockpile(stockpile.id)
-
-    # Return stockpiles
-    return stockpiles
 
 
 # Create a stockpile
@@ -255,3 +229,16 @@ def calculate_change(latest_price, previous_price):
 
     # Return changes
     return change
+
+
+# Update stocks
+def update_stocks():
+    # Get stocks
+    stocks = Stock.objects.all()
+    for stock in stocks:
+        # If using free AlphaVantage API use delay to handle rate limiting (5 calls per min)
+        time.sleep(12)
+        # List stock symbol
+        print(stock.symbol)
+        # Update stock data
+        refresh_stock(stock.symbol)
