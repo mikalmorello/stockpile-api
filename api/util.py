@@ -101,15 +101,25 @@ def create_stockpile(submission):
 
     # Get the title
     title = submission.get("title")
-    # Get stocks
+    # Get selected symbols
     symbols = submission["stocks"]
+    # Set max limit for number of selected symbols
+    symbolsLimit = 5
 
     # Create a list of stocks
     stocks = []
 
-    # Loop through stocks
+    # Check the symbols length against the max limit
+    if len(symbols) > symbolsLimit:
+        # Slice off symbols that exceed the limit
+        symbols = symbols[:symbolsLimit]
+        # Print out error message
+        print(
+            f'You have exceeded the max number of stocks allowed in a stockpile ({symbolsLimit})')
+
+    # Loop through selected symbols
     for symbol in symbols:
-        # get the stock symbol
+        # Set the stock symbol
         stock_symbol = symbol["value"]
 
         # Check if stock exists
@@ -124,10 +134,6 @@ def create_stockpile(submission):
             new_stock = create_stock(stock_symbol)
             stocks.append(new_stock)
 
-    print(submission)
-    print(title)
-    print(stocks)
-
     # Create new stockpile
     stockpile = Stockpile(
         title=title,
@@ -136,10 +142,10 @@ def create_stockpile(submission):
     # Save stockpile
     stockpile.save()
 
-    # Set stockpiles
+    # Set stockpile stocks
     stockpile.stocks.set(stocks)
 
-    # Return the stock
+    # Return the stockpile
     return stockpile
 
 
