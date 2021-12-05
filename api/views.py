@@ -12,6 +12,7 @@ from . import util
 from .models import User, Stockpile, Symbol, Stock
 
 # Rest Framework
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -123,6 +124,10 @@ class UserView(APIView):
 
 
 class StockpilesView(APIView):
+
+    # Set permissions
+    # permission_classes = (IsAuthenticated)
+
     def get(self, request, *args, **kwargs):
         # Get stockpiles data
         stockpiles = Stockpile.objects.all()
@@ -159,6 +164,7 @@ def create_stockpile(request):
 
 
 class StockpileView(APIView):
+
     def get(self, request, *args, **kwargs):
         # Get URL parameter
         stockpile_id = kwargs.get("stockpile_id")
