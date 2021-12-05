@@ -14,6 +14,8 @@ from .models import User, Stockpile, Symbol, Stock
 # Rest Framework
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
 from .serializers import UserSerializer, StockpileSerializer, SymbolSerializer, StockSerializer
 
 
@@ -129,17 +131,16 @@ class StockpilesView(APIView):
         # Return response
         return Response(serializer.data)
 
-
-class StockpileView(APIView):
-    def get(self, request, *args, **kwargs):
-        # Get URL parameter
-        stockpile_id = kwargs.get("stockpile_id")
-        # Get stockpile data
-        stockpile = Stockpile.objects.get(id=stockpile_id)
-        # Serialize stockpile
-        serializer = StockpileSerializer(stockpile)
-        # Return response
-        return Response(serializer.data)
+    @csrf_exempt
+    def post(self, request, format=None):
+        print("REQUEST")
+        submission = json.loads(request.body)
+        util.create_stockpile(submission)
+        # serializer = SnippetSerializer(data=request.data)
+        # if serializer.is_valid():
+        #     serializer.save()
+        #     return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @csrf_exempt
@@ -155,6 +156,43 @@ def create_stockpile(request):
     return render(request, "api/test.html", {
         "title": "title"
     })
+
+
+class StockpileView(APIView):
+    def get(self, request, *args, **kwargs):
+        # Get URL parameter
+        stockpile_id = kwargs.get("stockpile_id")
+        # Get stockpile data
+        stockpile = Stockpile.objects.get(id=stockpile_id)
+        # Serialize stockpile
+        serializer = StockpileSerializer(stockpile)
+        # Return response
+        return Response(serializer.data)
+
+    def delete(self, request,  *args, **kwargs):
+        # Get URL parameter
+        stockpile_id = kwargs.get("stockpile_id")
+        # Get stockpile data
+        stockpile = Stockpile.objects.get(id=stockpile_id)
+        # Delete object
+        stockpile.delete()
+        # return response
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# @csrf_exempt
+# def create_stockpile(request):
+#     print(request)
+#     # Get the form submission
+#     if request.method == "POST":
+#         # Submission data
+#         submission = json.loads(request.body)
+#         # Create stockpile
+#         util.create_stockpile(submission)
+
+#     return render(request, "api/test.html", {
+#         "title": "title"
+#     })
 
 
 class SymbolsView(APIView):
