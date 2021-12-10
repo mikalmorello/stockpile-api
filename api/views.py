@@ -12,12 +12,31 @@ from . import util
 from .models import User, Stockpile, Symbol, Stock
 
 # Rest Framework
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .serializers import UserSerializer, StockpileSerializer, SymbolSerializer, StockSerializer
+
+# Customize token claims
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Add custom claims
+        token['username'] = user.username
+        # ...
+
+        return token
+
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
 
 
 def index(request):
@@ -126,9 +145,11 @@ class UserView(APIView):
 class StockpilesView(APIView):
 
     # Set permissions
-    # permission_classes = (IsAuthenticated)
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
+        print("user is")
+        print(request.user)
         # Get stockpiles data
         stockpiles = Stockpile.objects.all()
         # Serialize stockpiles
