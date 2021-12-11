@@ -20,7 +20,6 @@ urlpatterns = [
     path("stockpiles/<str:stockpile_id>",
          views.StockpileView.as_view(), name="stockpile"),
     path("users", views.UsersView.as_view(), name="users"),
-    path("users/active", views.active_user, name="active_user"),
     path("users/<str:user_id>", views.UserView.as_view(), name="user"),
     path("symbols", views.SymbolsView.as_view(), name="symbols"),
     path("symbols/update", views.update_symbols, name="update_symbols"),
