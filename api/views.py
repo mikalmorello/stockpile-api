@@ -315,6 +315,9 @@ def update_symbols(request):
     # Update stock symbols
     util.update_symbols()
 
+    # Return response
+    return JsonResponse({"message": "Symbols updated."}, status=201)
+
 
 class StocksView(APIView):
     """
