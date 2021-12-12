@@ -26,7 +26,7 @@ class StockpileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stockpile
         fields = (
-            'id', 'title', 'stocks', 'date_created', 'creator'
+            'id', 'title', 'stocks', 'date_created', 'creator', 'day_change', 'week_change'
         )
 
 

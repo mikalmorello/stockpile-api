@@ -6,12 +6,7 @@ from django.db import models
 
 
 class User(AbstractUser):
-    def serialize(self):
-        return {
-            "id": self.id,
-            "username": self.username,
-            "email": self.email
-        }
+    pass
 
 
 class Stockpile(models.Model):
@@ -24,28 +19,11 @@ class Stockpile(models.Model):
         related_name="created",
         default=1
     )
+    day_change = models.FloatField(default=0)
+    week_change = models.FloatField(default=0)
 
     def __str__(self):
         return f"{self.title}"
-
-    def serialize(self):
-        stocks = []
-        for stock in self.stocks.all():
-            stock_data = {
-                "id": stock.id,
-                "symbol": stock.symbol,
-                "last_refreshed": stock.last_refreshed,
-                "daily": stock.daily,
-                "day_change": stock.day_change,
-                "week_change": stock.week_change
-            }
-            stocks.append(stock_data)
-        return {
-            "id": self.id,
-            "stocks": stocks,
-            "title": self.title,
-            "creator": self.creator.username
-        }
 
 
 class Symbol(models.Model):
@@ -55,13 +33,6 @@ class Symbol(models.Model):
 
     def __str__(self):
         return f"{self.symbol}"
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "symbol": self.symbol,
-            "name": self.name
-        }
 
 
 class Stock(models.Model):
@@ -73,13 +44,3 @@ class Stock(models.Model):
 
     def __str__(self):
         return f"{self.symbol}"
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "symbol": self.symbol,
-            "last_refreshed": self.last_refreshed,
-            "daily": self.daily,
-            "day_change": self.day_change,
-            "week_change": self.week_change
-        }

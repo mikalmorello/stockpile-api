@@ -6,9 +6,9 @@ from django.db import IntegrityError
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
 from . import util
 
+# Import models
 from .models import User, Stockpile, Symbol, Stock
 
 # Rest Framework
@@ -18,9 +18,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .serializers import UserSerializer, StockpileSerializer, SymbolSerializer, StockSerializer
 
-# Customize token claims
+# Import token libraries
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
+
+# Customize tokens
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -31,21 +33,13 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         # Add custom claims
         token['username'] = user.username
         token['email'] = user.email
-        # ...
-
         return token
+
+# Token class
 
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
-
-
-def index(request):
-    user = request.user
-    return render(request, "api/index.html", {
-        "title": 'title',
-        "user": user,
-    })
 
 
 def login_view(request):
@@ -86,10 +80,12 @@ def logout_view(request):
     return HttpResponseRedirect(reverse("api:index"))
 
 
+@csrf_exempt
 def register(request):
     """
     Handle user registration
     """
+    print(request)
     # For a post request, attempt registration
     if request.method == "POST":
         username = request.POST["username"]
@@ -105,6 +101,7 @@ def register(request):
 
         # Attempt to create new user
         try:
+            print('creating user')
             user = User.objects.create_user(username, email, password)
             user.save()
         except IntegrityError:
@@ -112,16 +109,22 @@ def register(request):
                 "message": "Username already taken."
             })
 
-        # Process login request
-        login(request, user)
-        # Redirect user to posts view
-        return HttpResponseRedirect(reverse("api:index"))
+        # return user message
+        return JsonResponse({"message": "User created."}, status=201)
+
     else:
         # Render register view
         return render(request, "api/register.html")
 
 
 class UsersView(APIView):
+    """
+    Handle users
+    """
+    # Set permissions
+    permission_classes = (IsAuthenticated,)
+
+    # Get Users
     def get(self, request, *args, **kwargs):
         # Get users data
         users = User.objects.all()
@@ -132,6 +135,12 @@ class UsersView(APIView):
 
 
 class UserView(APIView):
+    """
+    Handle user
+    """
+    # Set permissions
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request, *args, **kwargs):
         # Get URL parameter
         user_id = kwargs.get("user_id")
@@ -144,7 +153,9 @@ class UserView(APIView):
 
 
 class StockpilesView(APIView):
-
+    """
+    Handle stockpiles
+    """
     # Set permissions
     permission_classes = (IsAuthenticated,)
 
@@ -153,6 +164,12 @@ class StockpilesView(APIView):
         print(request.user)
         # Get stockpiles data
         stockpiles = Stockpile.objects.all()
+
+        # Refresh stockpiles totals
+        for stockpile in stockpiles.all():
+            # Refresh stockpile totals
+            util.refresh_stockpile(stockpile.id)
+
         # Serialize stockpiles
         serializer = StockpileSerializer(stockpiles, many=True)
         # Return response
@@ -163,33 +180,86 @@ class StockpilesView(APIView):
         print("REQUEST")
         submission = json.loads(request.body)
         util.create_stockpile(submission)
-        # serializer = SnippetSerializer(data=request.data)
-        # if serializer.is_valid():
-        #     serializer.save()
-        #     return Response(serializer.data, status=status.HTTP_201_CREATED)
-        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@csrf_exempt
-def create_stockpile(request):
-    print(request)
-    # Get the form submission
-    if request.method == "POST":
-        # Submission data
+class UserStockpilesView(APIView):
+    """
+    Handle users
+    """
+    # Set permissions
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        # get the user
+        user = request.user
+        # Get list of users stockpiles
+        stockpiles = user.created.all()
+
+        # Refresh stockpiles totals
+        for stockpile in stockpiles.all():
+            # Refresh stockpile totals
+            util.refresh_stockpile(stockpile.id)
+
+        # Serialize stockpiles
+        serializer = StockpileSerializer(stockpiles, many=True)
+        # Return response
+        return Response(serializer.data)
+
+    @csrf_exempt
+    def post(self, request, format=None):
+        print("REQUEST")
         submission = json.loads(request.body)
-        # Create stockpile
         util.create_stockpile(submission)
 
-    return render(request, "api/test.html", {
-        "title": "title"
-    })
+
+class CreateStockpileView(APIView):
+    """
+    Handle create stockpile
+    """
+    # Set permissions
+    permission_classes = (IsAuthenticated,)
+
+    @csrf_exempt
+    def post(self, request, format=None):
+        # Get the user
+        user = request.user
+
+        # Get submission data
+        submission = json.loads(request.body)
+
+        # Create stockpile
+        stockpile = util.create_stockpile(submission, user)
+
+        # Create new stockpile
+        newStockpile = Stockpile(
+            title=stockpile['title'],
+            creator=user,
+        )
+
+        # Save stockpile
+        newStockpile.save()
+
+        # Set stockpile stocks
+        newStockpile.stocks.set(stockpile['stocks'])
+
+        # return Response(newStockpile)
+        return JsonResponse({"message": "Stockpile created."}, status=201)
 
 
 class StockpileView(APIView):
+    """
+    Handle stockpile
+    """
+    # Set permissions
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
         # Get URL parameter
         stockpile_id = kwargs.get("stockpile_id")
+
+        # Refresh stockpile
+        util.refresh_stockpile(stockpile_id)
+
         # Get stockpile data
         stockpile = Stockpile.objects.get(id=stockpile_id)
         # Serialize stockpile
@@ -208,22 +278,11 @@ class StockpileView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-# @csrf_exempt
-# def create_stockpile(request):
-#     print(request)
-#     # Get the form submission
-#     if request.method == "POST":
-#         # Submission data
-#         submission = json.loads(request.body)
-#         # Create stockpile
-#         util.create_stockpile(submission)
-
-#     return render(request, "api/test.html", {
-#         "title": "title"
-#     })
-
-
 class SymbolsView(APIView):
+    """
+    Handle symbols
+    """
+
     def get(self, request, *args, **kwargs):
         # Get symbols
         symbols = Symbol.objects.all()
@@ -234,6 +293,10 @@ class SymbolsView(APIView):
 
 
 class SymbolView(APIView):
+    """
+    Handle symbol
+    """
+
     def get(self, request, *args, **kwargs):
         # Get URL parameter
         stock_symbol = kwargs.get("stock_symbol")
@@ -246,11 +309,18 @@ class SymbolView(APIView):
 
 
 def update_symbols(request):
+    """
+    Update available stock symbols
+    """
     # Update stock symbols
     util.update_symbols()
 
 
 class StocksView(APIView):
+    """
+    Handle stocks
+    """
+
     def get(self, request, *args, **kwargs):
         # Get Stocks
         stocks = Stock.objects.all()
@@ -261,6 +331,10 @@ class StocksView(APIView):
 
 
 class StockView(APIView):
+    """
+    Handle stock
+    """
+
     def get(self, request, *args, **kwargs):
         # Get URL parameter
         stock_symbol = kwargs.get("stock_symbol")
@@ -281,5 +355,8 @@ class StockView(APIView):
 
 
 def update_stocks(request):
+    """
+    Handle update stocks data
+    """
     # Update stocks data
     util.update_stocks()
