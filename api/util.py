@@ -144,8 +144,46 @@ def create_stockpile(submission, user):
     # Return the stockpile data
     return stockpile
 
+# Refresh a stockpile
 
-# Create a stock
+
+def refresh_stockpile(stockpile_id):
+    # Get stockpile
+    stockpile = Stockpile.objects.get(id=stockpile_id)
+
+    # Number of stocks
+    number_of_stocks = len(stockpile.stocks.all())
+
+    # Price variables
+    day_percent_change = 0
+    week_percent_change = 0
+
+    if(number_of_stocks > 0):
+
+        # Loop through stocks
+        for stock in stockpile.stocks.all():
+            # Add stocks day % change to total
+            day_percent_change = day_percent_change + \
+                float(stock.day_change['percent'])
+            # Add stocks week % change to total
+            week_percent_change = week_percent_change + \
+                float(stock.week_change['percent'])
+
+        # Calculate stockpiles day % change
+        day_percent_change = round(
+            day_percent_change / number_of_stocks, 2)
+        # Calculate stockpiles week % change
+        week_percent_change = round(
+            week_percent_change / number_of_stocks, 2)
+
+    # Update the stockpile day change metrics
+    stockpile.day_change = day_percent_change
+    # Update the stockpile week change metrics
+    stockpile.week_change = week_percent_change
+    # Save the stockpile
+    stockpile.save()
+
+
 def create_stock(stock_symbol):
     """
     Create a stock

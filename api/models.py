@@ -19,6 +19,8 @@ class Stockpile(models.Model):
         related_name="created",
         default=1
     )
+    day_change = models.FloatField(default=0)
+    week_change = models.FloatField(default=0)
 
     def __str__(self):
         return f"{self.title}"

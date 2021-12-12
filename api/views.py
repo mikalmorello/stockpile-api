@@ -162,6 +162,12 @@ class StockpilesView(APIView):
         print(request.user)
         # Get stockpiles data
         stockpiles = Stockpile.objects.all()
+
+        # Refresh stockpiles totals
+        for stockpile in stockpiles.all():
+            # Refresh stockpile totals
+            util.refresh_stockpile(stockpile.id)
+
         # Serialize stockpiles
         serializer = StockpileSerializer(stockpiles, many=True)
         # Return response
@@ -183,13 +189,15 @@ class UserStockpilesView(APIView):
 
     def get(self, request, *args, **kwargs):
         # get the user
-        print("user is")
-        print(request.user)
         user = request.user
         # Get list of users stockpiles
         stockpiles = user.created.all()
-        # Get stockpiles data
-        print(stockpiles)
+
+        # Refresh stockpiles totals
+        for stockpile in stockpiles.all():
+            # Refresh stockpile totals
+            util.refresh_stockpile(stockpile.id)
+
         # Serialize stockpiles
         serializer = StockpileSerializer(stockpiles, many=True)
         # Return response
@@ -211,10 +219,6 @@ class CreateStockpileView(APIView):
 
     @csrf_exempt
     def post(self, request, format=None):
-        print("CREATE STOCKPILE")
-        # User information
-        print("create user is")
-        print(request.user)
         # Get the user
         user = request.user
 
@@ -250,6 +254,10 @@ class StockpileView(APIView):
     def get(self, request, *args, **kwargs):
         # Get URL parameter
         stockpile_id = kwargs.get("stockpile_id")
+
+        # Refresh stockpile
+        util.refresh_stockpile(stockpile_id)
+
         # Get stockpile data
         stockpile = Stockpile.objects.get(id=stockpile_id)
         # Serialize stockpile
