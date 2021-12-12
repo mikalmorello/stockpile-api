@@ -80,10 +80,12 @@ def logout_view(request):
     return HttpResponseRedirect(reverse("api:index"))
 
 
+@csrf_exempt
 def register(request):
     """
     Handle user registration
     """
+    print(request)
     # For a post request, attempt registration
     if request.method == "POST":
         username = request.POST["username"]
@@ -99,6 +101,7 @@ def register(request):
 
         # Attempt to create new user
         try:
+            print('creating user')
             user = User.objects.create_user(username, email, password)
             user.save()
         except IntegrityError:
@@ -106,10 +109,9 @@ def register(request):
                 "message": "Username already taken."
             })
 
-        # Process login request
-        login(request, user)
-        # Redirect user to posts view
-        return HttpResponseRedirect(reverse("api:index"))
+        # return user message
+        return JsonResponse({"message": "User created."}, status=201)
+
     else:
         # Render register view
         return render(request, "api/register.html")
