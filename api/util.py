@@ -135,16 +135,11 @@ def create_stockpile(submission, user):
             stocks.append(new_stock)
 
     # Create new stockpile
-    stockpile = Stockpile(
-        title=title,
-        creator=user,
-    )
-
-    # Save stockpile
-    stockpile.save()
-
-    # Set stockpile stocks
-    stockpile.stocks.set(stocks)
+    stockpile = {
+        'title': title,
+        'creator': user,
+        'stocks': stocks
+    }
 
     # Return the stockpile
     return stockpile

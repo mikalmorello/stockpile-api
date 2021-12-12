@@ -210,32 +210,26 @@ class CreateStockpileView(APIView):
         # Get the user
         user = request.user
 
-        # Submission data
+        # Get submission data
         submission = json.loads(request.body)
 
-        print(submission)
-
         # Create stockpile
-        util.create_stockpile(submission, user)
+        stockpile = util.create_stockpile(submission, user)
 
-        return render(request, "api/test.html", {
-            "title": "title"
-        })
+        # Create new stockpile
+        newStockpile = Stockpile(
+            title=stockpile['title'],
+            creator=user,
+        )
 
-# @csrf_exempt
-# def create_stockpile(request):
-#     print(request)
-#     print(request.user)
-#     # Get the form submission
-#     if request.method == "POST":
-#         # Submission data
-#         submission = json.loads(request.body)
-#         # Create stockpile
-#         util.create_stockpile(submission)
+        # Save stockpile
+        newStockpile.save()
 
-#     return render(request, "api/test.html", {
-#         "title": "title"
-#     })
+        # Set stockpile stocks
+        newStockpile.stocks.set(stockpile['stocks'])
+
+        # return Response(newStockpile)
+        return JsonResponse({"message": "Stockpile created."}, status=201)
 
 
 class StockpileView(APIView):
@@ -259,21 +253,6 @@ class StockpileView(APIView):
         stockpile.delete()
         # return response
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-# @csrf_exempt
-# def create_stockpile(request):
-#     print(request)
-#     # Get the form submission
-#     if request.method == "POST":
-#         # Submission data
-#         submission = json.loads(request.body)
-#         # Create stockpile
-#         util.create_stockpile(submission)
-
-#     return render(request, "api/test.html", {
-#         "title": "title"
-#     })
 
 
 class SymbolsView(APIView):
