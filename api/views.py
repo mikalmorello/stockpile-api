@@ -30,6 +30,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         # Add custom claims
         token['username'] = user.username
+        token['email'] = user.email
         # ...
 
         return token
@@ -282,12 +283,3 @@ class StockView(APIView):
 def update_stocks(request):
     # Update stocks data
     util.update_stocks()
-
-
-@csrf_exempt
-def active_user(request):
-    # Get active user
-    user = request.user
-    # For a GET request
-    if request.method == "GET":
-        return JsonResponse(user.serialize(), safe=False)
