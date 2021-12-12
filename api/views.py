@@ -170,19 +170,72 @@ class StockpilesView(APIView):
         # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@csrf_exempt
-def create_stockpile(request):
-    print(request)
-    # Get the form submission
-    if request.method == "POST":
-        # Submission data
+class UserStockpilesView(APIView):
+
+    # Set permissions
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        # get the user
+        print("user is")
+        print(request.user)
+        user = request.user
+        # Get list of users stockpiles
+        stockpiles = user.created.all()
+        # Get stockpiles data
+        print(stockpiles)
+        # Serialize stockpiles
+        serializer = StockpileSerializer(stockpiles, many=True)
+        # Return response
+        return Response(serializer.data)
+
+    @csrf_exempt
+    def post(self, request, format=None):
+        print("REQUEST")
         submission = json.loads(request.body)
-        # Create stockpile
         util.create_stockpile(submission)
 
-    return render(request, "api/test.html", {
-        "title": "title"
-    })
+
+class CreateStockpileView(APIView):
+
+    # Set permissions
+    permission_classes = (IsAuthenticated,)
+
+    @csrf_exempt
+    def post(self, request, format=None):
+        print("CREATE STOCKPILE")
+        # User information
+        print("create user is")
+        print(request.user)
+        # Get the user
+        user = request.user
+
+        # Submission data
+        submission = json.loads(request.body)
+
+        print(submission)
+
+        # Create stockpile
+        util.create_stockpile(submission, user)
+
+        return render(request, "api/test.html", {
+            "title": "title"
+        })
+
+# @csrf_exempt
+# def create_stockpile(request):
+#     print(request)
+#     print(request.user)
+#     # Get the form submission
+#     if request.method == "POST":
+#         # Submission data
+#         submission = json.loads(request.body)
+#         # Create stockpile
+#         util.create_stockpile(submission)
+
+#     return render(request, "api/test.html", {
+#         "title": "title"
+#     })
 
 
 class StockpileView(APIView):

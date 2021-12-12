@@ -96,7 +96,7 @@ def refresh_stock(stock_symbol):
 
 
 # Create a stockpile
-def create_stockpile(submission):
+def create_stockpile(submission, user):
     print(f"Create stockpile")
 
     # Get the title
@@ -137,6 +137,7 @@ def create_stockpile(submission):
     # Create new stockpile
     stockpile = Stockpile(
         title=title,
+        creator=user,
     )
 
     # Save stockpile
