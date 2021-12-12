@@ -122,6 +122,10 @@ def register(request):
 
 
 class UsersView(APIView):
+    # Set permissions
+    permission_classes = (IsAuthenticated,)
+
+    # Get Users
     def get(self, request, *args, **kwargs):
         # Get users data
         users = User.objects.all()
@@ -132,6 +136,9 @@ class UsersView(APIView):
 
 
 class UserView(APIView):
+    # Set permissions
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request, *args, **kwargs):
         # Get URL parameter
         user_id = kwargs.get("user_id")
@@ -144,7 +151,6 @@ class UserView(APIView):
 
 
 class StockpilesView(APIView):
-
     # Set permissions
     permission_classes = (IsAuthenticated,)
 
@@ -171,7 +177,6 @@ class StockpilesView(APIView):
 
 
 class UserStockpilesView(APIView):
-
     # Set permissions
     permission_classes = (IsAuthenticated,)
 
@@ -197,7 +202,6 @@ class UserStockpilesView(APIView):
 
 
 class CreateStockpileView(APIView):
-
     # Set permissions
     permission_classes = (IsAuthenticated,)
 
@@ -233,6 +237,8 @@ class CreateStockpileView(APIView):
 
 
 class StockpileView(APIView):
+    # Set permissions
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
         # Get URL parameter
