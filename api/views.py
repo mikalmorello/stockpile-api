@@ -6,9 +6,9 @@ from django.db import IntegrityError
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
 from . import util
 
+# Import models
 from .models import User, Stockpile, Symbol, Stock
 
 # Rest Framework
@@ -18,9 +18,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .serializers import UserSerializer, StockpileSerializer, SymbolSerializer, StockSerializer
 
-# Customize token claims
+# Import token libraries
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
+
+# Customize tokens
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -31,21 +33,13 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         # Add custom claims
         token['username'] = user.username
         token['email'] = user.email
-        # ...
-
         return token
+
+# Token class
 
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
-
-
-def index(request):
-    user = request.user
-    return render(request, "api/index.html", {
-        "title": 'title',
-        "user": user,
-    })
 
 
 def login_view(request):
@@ -122,6 +116,9 @@ def register(request):
 
 
 class UsersView(APIView):
+    """
+    Handle users
+    """
     # Set permissions
     permission_classes = (IsAuthenticated,)
 
@@ -136,6 +133,9 @@ class UsersView(APIView):
 
 
 class UserView(APIView):
+    """
+    Handle user
+    """
     # Set permissions
     permission_classes = (IsAuthenticated,)
 
@@ -151,6 +151,9 @@ class UserView(APIView):
 
 
 class StockpilesView(APIView):
+    """
+    Handle stockpiles
+    """
     # Set permissions
     permission_classes = (IsAuthenticated,)
 
@@ -169,14 +172,12 @@ class StockpilesView(APIView):
         print("REQUEST")
         submission = json.loads(request.body)
         util.create_stockpile(submission)
-        # serializer = SnippetSerializer(data=request.data)
-        # if serializer.is_valid():
-        #     serializer.save()
-        #     return Response(serializer.data, status=status.HTTP_201_CREATED)
-        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserStockpilesView(APIView):
+    """
+    Handle users
+    """
     # Set permissions
     permission_classes = (IsAuthenticated,)
 
@@ -202,6 +203,9 @@ class UserStockpilesView(APIView):
 
 
 class CreateStockpileView(APIView):
+    """
+    Handle create stockpile
+    """
     # Set permissions
     permission_classes = (IsAuthenticated,)
 
@@ -237,6 +241,9 @@ class CreateStockpileView(APIView):
 
 
 class StockpileView(APIView):
+    """
+    Handle stockpile
+    """
     # Set permissions
     permission_classes = (IsAuthenticated,)
 
@@ -262,6 +269,10 @@ class StockpileView(APIView):
 
 
 class SymbolsView(APIView):
+    """
+    Handle symbols
+    """
+
     def get(self, request, *args, **kwargs):
         # Get symbols
         symbols = Symbol.objects.all()
@@ -272,6 +283,10 @@ class SymbolsView(APIView):
 
 
 class SymbolView(APIView):
+    """
+    Handle symbol
+    """
+
     def get(self, request, *args, **kwargs):
         # Get URL parameter
         stock_symbol = kwargs.get("stock_symbol")
@@ -284,11 +299,18 @@ class SymbolView(APIView):
 
 
 def update_symbols(request):
+    """
+    Update available stock symbols
+    """
     # Update stock symbols
     util.update_symbols()
 
 
 class StocksView(APIView):
+    """
+    Handle stocks
+    """
+
     def get(self, request, *args, **kwargs):
         # Get Stocks
         stocks = Stock.objects.all()
@@ -299,6 +321,10 @@ class StocksView(APIView):
 
 
 class StockView(APIView):
+    """
+    Handle stock
+    """
+
     def get(self, request, *args, **kwargs):
         # Get URL parameter
         stock_symbol = kwargs.get("stock_symbol")
@@ -319,5 +345,8 @@ class StockView(APIView):
 
 
 def update_stocks(request):
+    """
+    Handle update stocks data
+    """
     # Update stocks data
     util.update_stocks()

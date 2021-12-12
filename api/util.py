@@ -11,13 +11,19 @@ from django.conf import settings
 from .models import User, Stockpile, Symbol, Stock
 
 
-# Get stock data
 def get_stockdata(stock_symbol):
+    """
+    Handle stock data from AlphaVantage
+    """
+    # Get environment variable
     API_KEY = config('ALPHAVANTAGE_API_KEY')
+    # AlphaVantage API endpoint
     url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol={stock_symbol}&apikey={API_KEY}'
+    # Get "daily"data from AlphaVantage for the related stock
     r = requests.get(url)
     data = r.json()
 
+    # Get the last 5 days of stock information
     stockdata = [
         {
             "date": list(data["Time Series (Daily)"].keys())[0],
@@ -49,9 +55,10 @@ def get_stockdata(stock_symbol):
     return stockdata
 
 
-# Update a stock
 def refresh_stock(stock_symbol):
-    print(f"--- {stock_symbol} Checked ---")
+    """
+    Refresh stock data from AlphaVantage
+    """
     # Get Stock
     stock = Stock.objects.get(symbol=stock_symbol.upper())
     # Get todays date
@@ -59,13 +66,8 @@ def refresh_stock(stock_symbol):
     # Get the stocks last update date
     stock_date = stock.last_refreshed.date()
 
-    print(todays_date)
-    print(stock_date)
-
     # If the stock hasn't been refreshed today
     if not stock_date == todays_date:
-        # if stock_date == todays_date:
-        print(f"--- {stock_symbol} Refreshed ---")
         # Refresh stock data
         stockdata = get_stockdata(stock.symbol)
 
@@ -86,8 +88,6 @@ def refresh_stock(stock_symbol):
         stock.day_change = day_change
         # Update the stock week change metrics
         stock.week_change = week_change
-        # Update the last refreshed data
-        # stock.refreshed = datetime.datetime.now()
         # Save the stock
         stock.save()
 
@@ -97,9 +97,10 @@ def refresh_stock(stock_symbol):
 
 # Create a stockpile
 def create_stockpile(submission, user):
-    print(f"Create stockpile")
-
-    # Get the title
+    """
+    Create a stockpile
+    """
+    # Get the stockpile title
     title = submission.get("title")
     # Get selected symbols
     symbols = submission["stocks"]
@@ -122,16 +123,15 @@ def create_stockpile(submission, user):
         # Set the stock symbol
         stock_symbol = symbol["value"]
 
-        # Check if stock exists
+        # Check if stock exists in database
         if Stock.objects.filter(symbol=stock_symbol.upper()).exists():
-            print(f"update stock {stock_symbol}")
-            # If the stock exists, update its data
+            # If the stock exists, refresh it's data
             stock = refresh_stock(stock_symbol)
             stocks.append(stock)
         else:
             # Create a new stock
-            print(f"create new stock {stock_symbol}")
             new_stock = create_stock(stock_symbol)
+            # Append stock data
             stocks.append(new_stock)
 
     # Create new stockpile
@@ -141,13 +141,15 @@ def create_stockpile(submission, user):
         'stocks': stocks
     }
 
-    # Return the stockpile
+    # Return the stockpile data
     return stockpile
 
 
 # Create a stock
 def create_stock(stock_symbol):
-    print(f"--- {stock_symbol} Created ---")
+    """
+    Create a stock
+    """
     # Get the stock data
     stockdata = get_stockdata(stock_symbol)
 
@@ -166,15 +168,17 @@ def create_stock(stock_symbol):
     stock = Stock(symbol=stock_symbol.upper(),
                   daily=stockdata, day_change=day_change, week_change=week_change)
 
+    # save the stock
     stock.save()
-
-    print(stock)
 
     # Return the stock
     return stock
 
 
 def update_symbols():
+    """
+    Update symbols list from local nasdaqlisted.txt file
+    """
     # Get Symbols
     symbols = Symbol.objects.all()
 
@@ -197,18 +201,21 @@ def update_symbols():
         listing_symbol = listing[0]
         listing_name = listing[1]
 
-        # print(new_symbol)
+        # Check if symbol exists
         if symbols.filter(symbol=listing_symbol).exists():
             # If symbol already exists, don't do anything
             pass
         else:
-            # Otherwise add symbol
+            # Otherwise create symbol
             new_symbol = Symbol(symbol=listing_symbol, name=listing_name)
+            # Save symbol to the database
             new_symbol.save()
 
 
-# Calculate amount and percent change
 def calculate_change(latest_price, previous_price):
+    """
+    Calculate amount and percent change
+    """
     # Convert any strings to numbers
     latest_price = float(latest_price)
     previous_price = float(previous_price)
@@ -220,23 +227,23 @@ def calculate_change(latest_price, previous_price):
     percent_change = str(
         round(((price_change / previous_price) * 100), 2))
 
+    # Create change object
     change = {
         "price": price_change,
         "percent": percent_change,
     }
 
-    print(latest_price)
-    print(previous_price)
-    print(change)
-
     # Return changes
     return change
 
 
-# Update stocks
 def update_stocks():
+    """
+    Refresh stock symbols within AlphaVantage rate limites
+    """
     # Get stocks
     stocks = Stock.objects.all()
+    # For each stock
     for stock in stocks:
         # If using free AlphaVantage API use delay to handle rate limiting (5 calls per min)
         time.sleep(12)
