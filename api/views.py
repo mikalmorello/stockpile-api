@@ -22,9 +22,8 @@ from .serializers import UserSerializer, StockpileSerializer, SymbolSerializer, 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
+
 # Customize tokens
-
-
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
@@ -35,9 +34,8 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['email'] = user.email
         return token
 
+
 # Token class
-
-
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
@@ -363,3 +361,6 @@ def update_stocks(request):
     """
     # Update stocks data
     util.update_stocks()
+
+    # Return response
+    return JsonResponse({"message": "Stocks updated."}, status=201)
